@@ -20,13 +20,19 @@ const AppInput: React.FC<{
 export default AppInput;
 
 const Input = styled.input`
-  border: none;
+  border-width: 0 0 0.1rem 0;
   background-color: rgba(0, 0, 0, 0);
   display: flex;
   align-self: flex-start;
   min-width: 4rem;
   max-width: 10rem;
   width: 2rem;
+  margin-left: 1rem;
+  :focus {
+    border-width: 0 0 0.1rem 0;
+    border-color: black;
+    outline: none;
+  }
 `;
 const Container = styled.div`
   display: flex;

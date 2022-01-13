@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CurrencyType, currencyType } from "../../App";
+import { CurrencyType, CurrencyObject } from "../types/ExcangeTypes";
 import styled from "styled-components";
 import AppText from "../atoms/AppText";
 import AppInput from "../atoms/AppInput";
@@ -7,7 +7,7 @@ import AddIcon from "../atoms/icons/AddIcon";
 import NegativeIcon from "../atoms/icons/NegativeIcon";
 
 const CurrencyRowItem: React.FC<{
-  currencies: currencyType[];
+  currencies: CurrencyObject[];
   onExchangeMountInput: (e: string) => void;
   exchangeMount?: number;
   selectedCurrency?: CurrencyType;
@@ -59,14 +59,21 @@ const CurrencyRowItem: React.FC<{
       </WalletInfo>
       <InputSide>
         <AppInput
-          type={"number"}
           value={exchangeMount !== 0 ? exchangeMount?.toString() : ""}
           onChange={(e) => {
-            onExchangeMountInput(e.target.value);
+            if (+e.target.value || e.target.value === "") {
+              onExchangeMountInput(e.target.value);
+            }
           }}
-          leftComponent={isSource ? <AddIcon /> : <NegativeIcon />}
+          leftComponent={
+            isSource ? <AddIcon size={23} /> : <NegativeIcon size={23} />
+          }
         />
-        {exceedWallet && <div>exceed your wallet</div>}
+        <AppText
+          style={{ color: exceedWallet ? "red" : "#ffffff", marginTop: "1rem" }}
+        >
+          {"Exceeds balance"}
+        </AppText>
       </InputSide>
     </Container>
   );
@@ -85,6 +92,8 @@ const Container = styled.div<ContainerProps>`
     p.isSource ? "rgb(255,255,255)" : "rgb(247,247,247)"};
   height: 7rem;
   padding: 1rem;
+  border-radius: ${(p: { isSource?: boolean }) =>
+    p.isSource ? `0.3rem 0.3rem 0 0` : `0 0 0.3rem 0.3rem`};
 `;
 const InputSide = styled.div``;
 const WalletInfo = styled.div`
@@ -93,10 +102,8 @@ const WalletInfo = styled.div`
 `;
 const Option = styled.option`
   background-color: white;
-  border-color: red;
   option {
     color: black;
-    background: red;
     font-weight: small;
     display: flex;
     white-space: pre;

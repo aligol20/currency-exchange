@@ -5,10 +5,10 @@ const AppText: React.FC<{
   style?: React.CSSProperties;
   props?: any;
   title?: string;
-}> = ({ style, props, title }) => {
+}> = ({ style, props, title, children }) => {
   return (
     <Text style={style} {...props}>
-      {props && props.children && props.children}
+      {children && children}
       {title && title}
     </Text>
   );
