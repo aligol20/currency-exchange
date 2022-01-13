@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CurrencyType, CurrencyObject } from "../types/ExcangeTypes";
-import styled from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import AppText from "../atoms/AppText";
 import AppInput from "../atoms/AppInput";
 import AddIcon from "../atoms/icons/AddIcon";
@@ -14,6 +14,7 @@ const CurrencyRowItem: React.FC<{
   setSelectedCurrency: (item: CurrencyType) => void;
   exceedWallet?: boolean | undefined;
   isSource?: boolean;
+  isUp?: boolean;
 }> = ({
   currencies,
   onExchangeMountInput,
@@ -22,11 +23,12 @@ const CurrencyRowItem: React.FC<{
   exchangeMount,
   exceedWallet,
   isSource,
+  isUp,
 }) => {
   const foundCurrency = (e: string) =>
     currencies.find((item) => item.name === e);
   return (
-    <Container isSource={isSource}>
+    <Container isUp={isUp} isSource={isSource}>
       <WalletInfo>
         <Select
           onChange={(e) => {
@@ -59,14 +61,16 @@ const CurrencyRowItem: React.FC<{
       </WalletInfo>
       <InputSide>
         <AppInput
-          value={exchangeMount !== 0 ? exchangeMount?.toString() : ""}
+          value={
+            exchangeMount !== 0 ? exchangeMount?.toFixed(4).toString() : ""
+          }
           onChange={(e) => {
             if (+e.target.value || e.target.value === "") {
               onExchangeMountInput(e.target.value);
             }
           }}
           leftComponent={
-            isSource ? <AddIcon size={23} /> : <NegativeIcon size={23} />
+            isSource ? <NegativeIcon size={23} /> : <AddIcon size={23} />
           }
         />
         <AppText
@@ -82,6 +86,7 @@ export default CurrencyRowItem;
 
 interface ContainerProps {
   isSource: boolean | undefined;
+  isUp?: boolean;
 }
 const Container = styled.div<ContainerProps>`
   display: flex;
@@ -92,8 +97,8 @@ const Container = styled.div<ContainerProps>`
     p.isSource ? "rgb(255,255,255)" : "rgb(247,247,247)"};
   height: 7rem;
   padding: 1rem;
-  border-radius: ${(p: { isSource?: boolean }) =>
-    p.isSource ? `0.3rem 0.3rem 0 0` : `0 0 0.3rem 0.3rem`};
+  border-radius: ${(p: { isUp?: boolean }) =>
+    p.isUp ? `0.3rem 0.3rem 0 0` : `0 0 0.3rem 0.3rem`};
 `;
 const InputSide = styled.div``;
 const WalletInfo = styled.div`

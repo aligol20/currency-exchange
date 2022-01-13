@@ -18,4 +18,7 @@ export default AppButton;
 const Button = styled.button`
   border-style: solid;
   border-width: 0rem;
+  :disabled {
+    background-color: gray;
+  }
 `;

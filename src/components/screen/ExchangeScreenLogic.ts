@@ -36,6 +36,7 @@ const useExchangeLogic = () => {
   const [sinkCurrency, setSinkCurrency] = useState<CurrencyType>("USD");
   const [exchangeMount, setExchangeMount] = useState({ mount: "", type: "" });
   const [rates, setRates] = useState(initialRates);
+  const [isSinkUp, setIsSinkUp] = useState<boolean>(true);
 
   useEffect(() => {
     axios({
@@ -119,10 +120,9 @@ const useExchangeLogic = () => {
   const exceedWallet = () => {
     const a = converter("source");
     const b = currencies.find((x) => sourceCurrency === x.name)?.mount;
-
-    if (a && a >= 0 && b && a <= b) {
-      console.log(a, "a");
-      console.log(b, "b");
+    console.log(a, "a");
+    console.log(b, "b");
+    if (a !== undefined && b !== undefined && a <= b) {
       return false;
     }
     return true;
@@ -135,6 +135,7 @@ const useExchangeLogic = () => {
     exchangeMount,
     rates,
     symbols,
+    isSinkUp,
     exchange,
     currencyConverter,
     converter,
@@ -142,6 +143,7 @@ const useExchangeLogic = () => {
     setSourceCurrency,
     setSinkCurrency,
     setExchangeMount,
+    setIsSinkUp,
   };
 };
 export default useExchangeLogic;
