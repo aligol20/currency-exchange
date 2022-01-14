@@ -4,17 +4,14 @@ import styled from "styled-components";
 const AppText: React.FC<{
   style?: React.CSSProperties;
   props?: any;
-  title?: string;
-}> = ({ style, props, title, children }) => {
+  className?: string;
+}> = ({ style, props, children, className }) => {
   return (
-    <Text style={style} {...props}>
-      {children && children}
-      {title && title}
+    <Text className={className} style={style} {...props}>
+      {children}
     </Text>
   );
 };
 export default AppText;
 
-const Text = styled.div`
-  color: rgb(181, 181, 181);
-`;
+const Text = styled.div``;

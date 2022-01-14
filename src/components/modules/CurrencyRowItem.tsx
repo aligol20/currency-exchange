@@ -1,19 +1,20 @@
-import React, { useState } from "react";
-import { CurrencyType, CurrencyObject } from "../types/ExcangeTypes";
-import styled, { css, keyframes } from "styled-components";
-import AppText from "../atoms/AppText";
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import "../../App.css";
 import AppInput from "../atoms/AppInput";
+import AppText from "../atoms/AppText";
 import AddIcon from "../atoms/icons/AddIcon";
 import NegativeIcon from "../atoms/icons/NegativeIcon";
-
+import { CurrencyObject, CurrencyType } from "../types/ExcangeTypes";
+import usePrevious from "../utils/hooks/usePrevious";
+let temp;
 const CurrencyRowItem: React.FC<{
   currencies: CurrencyObject[];
   onExchangeMountInput: (e: string) => void;
   exchangeMount?: number;
-  selectedCurrency?: CurrencyType;
+  selectedCurrency: CurrencyType;
   setSelectedCurrency: (item: CurrencyType) => void;
   exceedWallet?: boolean | undefined;
-  isSource?: boolean;
   isUp?: boolean;
 }> = ({
   currencies,
@@ -22,13 +23,34 @@ const CurrencyRowItem: React.FC<{
   selectedCurrency,
   exchangeMount,
   exceedWallet,
-  isSource,
   isUp,
 }) => {
-  const foundCurrency = (e: string) =>
+  const foundCurrency = (e: string): CurrencyObject | undefined =>
     currencies.find((item) => item.name === e);
+  const [changed, setChanged] = useState<"none" | "dec" | "inc">("none");
+  const prevCount: number | undefined = usePrevious(
+    foundCurrency(selectedCurrency)?.mount
+  );
+  useEffect(() => {
+    if (prevCount && Number(foundCurrency(selectedCurrency)?.mount)) {
+      if (prevCount > Number(foundCurrency(selectedCurrency)?.mount)) {
+        setChanged("dec");
+      }
+      if (prevCount < Number(foundCurrency(selectedCurrency)?.mount)) {
+        setChanged("inc");
+      }
+    }
+  }, [foundCurrency(selectedCurrency)?.mount]);
+  useEffect(() => {
+    if (changed === "dec" || changed === "inc") {
+      setTimeout(() => {
+        setChanged("none");
+      }, 500);
+    }
+  }, [changed]);
+
   return (
-    <Container isUp={isUp} isSource={isSource}>
+    <Container isUp={isUp}>
       <WalletInfo>
         <Select
           onChange={(e) => {
@@ -41,6 +63,7 @@ const CurrencyRowItem: React.FC<{
               }
             }
           }}
+          value={selectedCurrency}
           name="cars"
           id="cars"
         >
@@ -50,31 +73,37 @@ const CurrencyRowItem: React.FC<{
             </Option>
           ))}
         </Select>
-        {selectedCurrency && (
-          <AppText
-            style={{ paddingTop: "0.5rem" }}
-            title={`Balance:${foundCurrency(selectedCurrency)?.symbol}${
-              foundCurrency(selectedCurrency)?.mount
-            }`}
-          />
+        {prevCount && (
+          <BalanceText
+            isChanged={changed}
+            style={{
+              ...{ paddingTop: "0.5rem" },
+              // ...transitionStyles[isUp ? "source" : "sink"][state],
+            }}
+          >
+            {`Balance:${foundCurrency(selectedCurrency)?.symbol}${foundCurrency(
+              selectedCurrency
+            )?.mount.toFixed(4)}`}
+          </BalanceText>
         )}
       </WalletInfo>
       <InputSide>
         <AppInput
-          value={
-            exchangeMount !== 0 ? exchangeMount?.toFixed(4).toString() : ""
-          }
+          value={exchangeMount !== 0 ? exchangeMount?.toString() : ""}
           onChange={(e) => {
             if (+e.target.value || e.target.value === "") {
               onExchangeMountInput(e.target.value);
             }
           }}
           leftComponent={
-            isSource ? <NegativeIcon size={23} /> : <AddIcon size={23} />
+            isUp ? <NegativeIcon size={23} /> : <AddIcon size={23} />
           }
         />
         <AppText
-          style={{ color: exceedWallet ? "red" : "#ffffff", marginTop: "1rem" }}
+          style={{
+            color: exceedWallet && isUp ? "red" : "#ffffff",
+            marginTop: "1rem",
+          }}
         >
           {"Exceeds balance"}
         </AppText>
@@ -85,16 +114,19 @@ const CurrencyRowItem: React.FC<{
 export default CurrencyRowItem;
 
 interface ContainerProps {
-  isSource: boolean | undefined;
   isUp?: boolean;
 }
+interface BalanceText {
+  isChanged?: "none" | "dec" | "inc";
+}
+
 const Container = styled.div<ContainerProps>`
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: ${(p: { isSource?: boolean }) =>
-    p.isSource ? "rgb(255,255,255)" : "rgb(247,247,247)"};
+  background-color: ${(p: { isUp?: boolean }) =>
+    p.isUp ? "rgb(255,255,255)" : "rgb(247,247,247)"};
   height: 7rem;
   padding: 1rem;
   border-radius: ${(p: { isUp?: boolean }) =>
@@ -124,4 +156,10 @@ const Select = styled.select`
   border-style: solid;
   min-width: 3.5rem;
   align-self: flex-start;
+`;
+const BalanceText = styled(AppText)<BalanceText>`
+  color: ${(p: { isChanged?: "none" | "dec" | "inc" }) =>
+    p.isChanged === "none" ? "black" : p.isChanged === "inc" ? "green" : "red"};
+
+  transition: color 0.5s;
 `;

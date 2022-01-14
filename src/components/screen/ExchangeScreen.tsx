@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import AppButton from "../atoms/AppButton";
 import CurrencyRate from "../modules/CurrencyRate";
@@ -6,40 +6,31 @@ import CurrencyRowItem from "../modules/CurrencyRowItem";
 import ReplaceCurrencyPosition from "../modules/ReplaceCurrencyPosition";
 import useExchangeLogic from "./ExchangeScreenLogic";
 
-interface ContainerProps {
-  isUp: boolean;
-}
 const ExchangeScreen: React.FC = () => {
   const {
     converter,
-    exceedWallet,
+    isExceedsWallet,
     setExchangeMount,
     exchange,
     setSinkCurrency,
     setSourceCurrency,
-    isSinkUp,
+    isEchangeDisable,
+    replaceSinkWithSource,
     symbols,
     rates,
     currencies,
     sourceCurrency,
     sinkCurrency,
-    setIsSinkUp,
   } = useExchangeLogic();
   const exchangeButtonStyle = {
-    backgroundColor:
-      sourceCurrency === sinkCurrency || exceedWallet()
-        ? "grey"
-        : "rgb(213,56,99)",
+    backgroundColor: isEchangeDisable() ? "grey" : "rgb(213,56,99)",
     color: "white",
     padding: "0.5rem",
-    margin: "0.5rem 0.5rem 0 0",
+    margin: "0.5rem 0.5rem 0 0rem",
     borderRadius: "0.1rem",
     alignSelf: "flex-start",
   };
 
-  const reOrderSinkWithSource = () => {
-    setIsSinkUp(!isSinkUp);
-  };
   return (
     <Container>
       <CurrencyRowItem
@@ -50,36 +41,33 @@ const ExchangeScreen: React.FC = () => {
         exchangeMount={converter("source")}
         selectedCurrency={sourceCurrency}
         setSelectedCurrency={setSourceCurrency}
-        exceedWallet={exceedWallet()}
-        isSource={isSinkUp}
+        exceedWallet={isExceedsWallet()}
         isUp
       />
-      <ReplaceCurrencyPosition onCLick={reOrderSinkWithSource} />
 
-      <Maintainer>
-        <CurrencyRate
-          source={{ rate: 1, symbol: symbols[sourceCurrency] }}
-          sink={{
-            rate: rates[sourceCurrency][sinkCurrency],
-            symbol: symbols[sinkCurrency],
-          }}
-        />
-      </Maintainer>
+      <ReplaceCurrencyPosition onCLick={replaceSinkWithSource} />
+
+      <CurrencyRate
+        source={{ rate: 1, symbol: symbols[sourceCurrency] }}
+        sink={{
+          rate: rates[sourceCurrency][sinkCurrency],
+          symbol: symbols[sinkCurrency],
+        }}
+      />
 
       <CurrencyRowItem
         currencies={currencies}
         onExchangeMountInput={(e) => {
           setExchangeMount({ type: "sink", mount: e });
         }}
+        exceedWallet={isExceedsWallet()}
         exchangeMount={converter("sink")}
         selectedCurrency={sinkCurrency}
         setSelectedCurrency={setSinkCurrency}
-        isSource={!isSinkUp}
       />
-
       <AppButton
         style={exchangeButtonStyle}
-        disabled={sourceCurrency === sinkCurrency || exceedWallet()}
+        disabled={isEchangeDisable()}
         onClick={exchange}
       >
         {"Exchange"}
@@ -90,20 +78,19 @@ const ExchangeScreen: React.FC = () => {
 
 export default ExchangeScreen;
 
-const Container = styled.div`
+interface ContainerProps {
+  isSinkUp?: boolean;
+}
+const Container = styled.div<ContainerProps>`
   display: flex;
   flex: 1;
   height: 70vh;
-  flex-direction: column;
+  flex-direction: ${(p: { isSinkUp?: boolean }) =>
+    p.isSinkUp ? "column" : "column"};
   background-color: rgb(40, 44, 50);
-  padding: 10rem;
   justify-content: center;
   overflow-y: hidden;
   overflow-x: hidden;
   scroll-behavior: unset;
-`;
-const Maintainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 10rem;
 `;

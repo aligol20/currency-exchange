@@ -36,7 +36,6 @@ const useExchangeLogic = () => {
   const [sinkCurrency, setSinkCurrency] = useState<CurrencyType>("USD");
   const [exchangeMount, setExchangeMount] = useState({ mount: "", type: "" });
   const [rates, setRates] = useState(initialRates);
-  const [isSinkUp, setIsSinkUp] = useState<boolean>(true);
 
   useEffect(() => {
     axios({
@@ -94,7 +93,7 @@ const useExchangeLogic = () => {
       );
     }
   };
-  const currencyConverter = (
+  const currencyCalculator = (
     inputMount: number,
     inputType?: string,
     outputType?: string
@@ -110,22 +109,41 @@ const useExchangeLogic = () => {
       return +exchangeMount.mount;
     }
     if (exchangeMount.type !== type) {
-      return currencyConverter(
+      return currencyCalculator(
         +exchangeMount.mount,
         sourceCurrency,
         sinkCurrency
       );
     }
   };
-  const exceedWallet = () => {
-    const a = converter("source");
-    const b = currencies.find((x) => sourceCurrency === x.name)?.mount;
-    console.log(a, "a");
-    console.log(b, "b");
-    if (a !== undefined && b !== undefined && a <= b) {
+  const isExceedsWallet = () => {
+    const neededCurrency = converter("source");
+    const walletMount = currencies.find(
+      (x) => sourceCurrency === x.name
+    )?.mount;
+
+    if (
+      neededCurrency !== undefined &&
+      walletMount !== undefined &&
+      neededCurrency <= walletMount
+    ) {
       return false;
     }
     return true;
+  };
+  const replaceSinkWithSource = () => {
+    const sink = sinkCurrency;
+    const source = sourceCurrency;
+    setSinkCurrency(source);
+    setSourceCurrency(sink);
+  };
+
+  const isEchangeDisable = (): boolean => {
+    if (sourceCurrency === sinkCurrency) return true;
+    if (isExceedsWallet()) return true;
+    if (exchangeMount.mount === "") return true;
+
+    return false;
   };
 
   return {
@@ -135,15 +153,15 @@ const useExchangeLogic = () => {
     exchangeMount,
     rates,
     symbols,
-    isSinkUp,
     exchange,
-    currencyConverter,
+    currencyCalculator,
     converter,
-    exceedWallet,
+    isExceedsWallet,
     setSourceCurrency,
     setSinkCurrency,
     setExchangeMount,
-    setIsSinkUp,
+    replaceSinkWithSource,
+    isEchangeDisable,
   };
 };
 export default useExchangeLogic;
