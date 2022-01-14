@@ -7,7 +7,7 @@ import AddIcon from "../atoms/icons/AddIcon";
 import NegativeIcon from "../atoms/icons/NegativeIcon";
 import { CurrencyObject, CurrencyType } from "../types/ExcangeTypes";
 import usePrevious from "../utils/hooks/usePrevious";
-let temp;
+
 const CurrencyRowItem: React.FC<{
   currencies: CurrencyObject[];
   onExchangeMountInput: (e: string) => void;
@@ -64,8 +64,8 @@ const CurrencyRowItem: React.FC<{
             }
           }}
           value={selectedCurrency}
-          name="cars"
-          id="cars"
+          name="cur"
+          id="cur"
         >
           {currencies.map((item, index) => (
             <Option key={index} value={item.name}>
