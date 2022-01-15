@@ -7,11 +7,11 @@ const symbols = {
   EUR: "€",
   GBP: "£",
 };
-const initialCurrencies: CurrencyObject[] = [
-  { name: "USD", mount: 200, symbol: symbols["USD"] },
-  { name: "EUR", mount: 150, symbol: symbols["EUR"] },
-  { name: "GBP", mount: 10, symbol: symbols["GBP"] },
-];
+const initialCurrencies: CurrencyObject = {
+  USD: { mount: 200, symbol: symbols["USD"] },
+  EUR: { mount: 150, symbol: symbols["EUR"] },
+  GBP: { mount: 10, symbol: symbols["GBP"] },
+};
 const initialRates = {
   USD: {
     EUR: 1.5,
@@ -31,7 +31,7 @@ const initialRates = {
 };
 const useExchangeLogic = () => {
   const [currencies, setCurrencis] =
-    useState<CurrencyObject[]>(initialCurrencies);
+    useState<CurrencyObject>(initialCurrencies);
   const [sourceCurrency, setSourceCurrency] = useState<CurrencyType>("USD");
   const [sinkCurrency, setSinkCurrency] = useState<CurrencyType>("USD");
   const [exchangeMount, setExchangeMount] = useState({ mount: "", type: "" });
@@ -67,30 +67,20 @@ const useExchangeLogic = () => {
       });
   }, []);
   const exchange = () => {
-    const source = currencies.find((item) => sourceCurrency === item.name);
-    const sink = currencies.find((item) => sinkCurrency === item.name);
+    const source = currencies[sourceCurrency];
+    const sink = currencies[sinkCurrency];
     const calculator = converter("source");
     const calculator_ = converter("sink");
     if (source && sink && calculator && calculator_) {
-      setCurrencis(
-        currencies.map((x) => {
-          if (x.name === sourceCurrency) {
-            const r = {
-              ...source,
-              mount: source.mount - calculator,
-            };
-            return r;
-          }
-          if (x.name === sinkCurrency) {
-            const r = {
-              ...sink,
-              mount: sink.mount + calculator_,
-            };
-            return r;
-          }
-          return x;
-        })
-      );
+      const temp = {
+        ...currencies,
+        ...{
+          [sourceCurrency]: { ...source, mount: source.mount - calculator },
+        },
+        ...{ [sinkCurrency]: { ...sink, mount: sink.mount + calculator_ } },
+      };
+
+      setCurrencis(temp);
     }
   };
   const currencyCalculator = (
@@ -118,9 +108,7 @@ const useExchangeLogic = () => {
   };
   const isExceedsWallet = () => {
     const neededCurrency = converter("source");
-    const walletMount = currencies.find(
-      (x) => sourceCurrency === x.name
-    )?.mount;
+    const walletMount = currencies[sourceCurrency].mount;
 
     if (
       neededCurrency !== undefined &&

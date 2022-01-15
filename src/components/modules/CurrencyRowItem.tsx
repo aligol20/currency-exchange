@@ -9,7 +9,7 @@ import { CurrencyObject, CurrencyType } from "../types/ExcangeTypes";
 import usePrevious from "../utils/hooks/usePrevious";
 
 const CurrencyRowItem: React.FC<{
-  currencies: CurrencyObject[];
+  currencies: CurrencyObject;
   onExchangeMountInput: (e: string) => void;
   exchangeMount?: number;
   selectedCurrency: CurrencyType;
@@ -25,22 +25,22 @@ const CurrencyRowItem: React.FC<{
   exceedWallet,
   isUp,
 }) => {
-  const foundCurrency = (e: string): CurrencyObject | undefined =>
-    currencies.find((item) => item.name === e);
+  // const foundCurrency = (e: CurrencyType) => currencies[e];
+
   const [changed, setChanged] = useState<"none" | "dec" | "inc">("none");
   const prevCount: number | undefined = usePrevious(
-    foundCurrency(selectedCurrency)?.mount
+    currencies[selectedCurrency].mount
   );
   useEffect(() => {
-    if (prevCount && Number(foundCurrency(selectedCurrency)?.mount)) {
-      if (prevCount > Number(foundCurrency(selectedCurrency)?.mount)) {
+    if (prevCount) {
+      if (prevCount > currencies[selectedCurrency].mount) {
         setChanged("dec");
       }
-      if (prevCount < Number(foundCurrency(selectedCurrency)?.mount)) {
+      if (prevCount < currencies[selectedCurrency].mount) {
         setChanged("inc");
       }
     }
-  }, [foundCurrency(selectedCurrency)?.mount]);
+  }, [currencies[selectedCurrency].mount]);
   useEffect(() => {
     if (changed === "dec" || changed === "inc") {
       setTimeout(() => {
@@ -55,41 +55,40 @@ const CurrencyRowItem: React.FC<{
         <Select
           onChange={(e) => {
             if (e.target.value) {
-              const symbol = e.target.value || "";
-              const cur: CurrencyType | undefined = foundCurrency(symbol)?.name;
+              const symbol: any = e.target.value;
 
-              if (cur) {
-                setSelectedCurrency(cur);
+              if (symbol) {
+                setSelectedCurrency(symbol);
               }
             }
           }}
           value={selectedCurrency}
-          name="cur"
+          name="USD"
           id="cur"
         >
-          {currencies.map((item, index) => (
-            <Option key={index} value={item.name}>
-              {item.name}
+          {Object.keys(currencies).map((key, index) => (
+            <Option key={index} value={key}>
+              {key}
             </Option>
           ))}
         </Select>
-        {prevCount && (
-          <BalanceText
-            isChanged={changed}
-            style={{
-              ...{ paddingTop: "0.5rem" },
-              // ...transitionStyles[isUp ? "source" : "sink"][state],
-            }}
-          >
-            {`Balance:${foundCurrency(selectedCurrency)?.symbol}${foundCurrency(
-              selectedCurrency
-            )?.mount.toFixed(4)}`}
-          </BalanceText>
-        )}
+
+        <BalanceText
+          isChanged={changed}
+          style={{
+            ...{ paddingTop: "0.5rem" },
+          }}
+        >
+          {`Balance:${currencies[selectedCurrency].symbol}${currencies[
+            selectedCurrency
+          ].mount.toFixed(4)}`}
+        </BalanceText>
       </WalletInfo>
       <InputSide>
         <AppInput
-          value={exchangeMount !== 0 ? exchangeMount?.toString() : ""}
+          value={
+            exchangeMount !== 0 ? exchangeMount?.toString().substring(0, 4) : ""
+          }
           onChange={(e) => {
             if (+e.target.value || e.target.value === "") {
               onExchangeMountInput(e.target.value);
@@ -101,7 +100,7 @@ const CurrencyRowItem: React.FC<{
         />
         <AppText
           style={{
-            color: exceedWallet && isUp ? "red" : "#ffffff",
+            color: exceedWallet && isUp ? "red" : "rgba(0,0,0,0)",
             marginTop: "1rem",
           }}
         >
